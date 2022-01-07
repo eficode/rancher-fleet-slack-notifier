@@ -7,6 +7,7 @@ from urllib3.exceptions import InsecureRequestWarning
 
 con = sqlite3.connect(":memory:")
 cur = con.cursor()
+# Ignoring warnings for local certs. Remove this if using external secure connection, instead of cluster internal one
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 
@@ -23,8 +24,8 @@ payload = ""
 
 
 def check_rancher_status():
-
     try:
+        # Ignoring warnings for local certs. Remove verify=False if using external secure connection, instead of cluster internal one
         request_response = requests.request("GET", RANCHER_URL, data=payload,  headers=headersList, verify=False)
     except requests.exceptions.ConnectionError as e:
         raise SystemExit(f'FATAL ERROR: {e}\n   Cannot connect to rancher URL')
@@ -44,7 +45,7 @@ def check_rancher_status():
                     if check_exists == 0:
                         cur.execute("INSERT INTO clusters VALUES (?, ?, ?)", (cluster_name, cluster_status, ''))
                     else:
-                        cur.execute("UPDATE clusters SET ready = ? where name = ?", (f"{cluster_status}", f"{cluster_name}"))
+                        cur.execute("UPDATE clusters SET ready = ? where name = ?", (cluster_status, cluster_name))
     except KeyError as e:
         raise SystemExit(f'FATAL ERROR: {e}\n  Rancher api data cannot be parsed, check token')
 
