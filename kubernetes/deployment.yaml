@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: slack-notifier
-        image: punasusi/slack-notifier:0.0.5
+        image: ghcr.io/eficode/rancher-fleet-slack-notifier:sha-01d3ab7
         env:
         - name: SLACK_NOTIFY_URL
           valueFrom:
