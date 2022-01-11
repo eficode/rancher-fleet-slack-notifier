@@ -7,16 +7,6 @@ It will querry the fleet-default cluster list, and generate an alert if any clus
 
 State of clusters is stored only in memory (sqlite). This means that every restart of this tool will resend any alerts, even if not new and sent already. The database could be moved to an external stateful DB if needed in the future.
 
-<!-- ## Build container image
-If not using container image provided here, an image needs to be built and pushed to an appropriate repository, following is only an exameple.
-
-```
-nerdctl build -t punasusi/slack-notifier:0.0.5 . 
-nerdctl push punasusi/slack-notifier:0.0.5
-```
-
-> nerdctl is part of rancherdesktop and replaces docker command for most everything -->
-
 ## Deploy
 First, a namespace is needed. (feel free to change namespace, but update other commands to match)
 ```
