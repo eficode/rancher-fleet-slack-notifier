@@ -18,7 +18,7 @@ a file called secrets.env with content:
 ```
 SLACK_NOTIFY_URL=<from slack>
 RANCHER_TOKEN=<bearer token for rancher user>
-RANCHER_URL=https://rancher.prms-tools.prod.gcp.veikkaus.fi/
+RANCHER_URL=http://rancher.cattle-system/v1/fleet.cattle.io.clusters/fleet-default
 CHECK_INTERVAL=60
 NOTIF_THRESHOLD=2
 ```

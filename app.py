@@ -12,8 +12,10 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 
 SLACK_NOTIFY_URL = os.getenv('SLACK_NOTIFY_URL')
-RANCHER_URL = os.getenv('RANCHER_URL')
+RANCHER_URL = os.getenv('RANCHER_URL', default="http://rancher.cattle-system/v1/fleet.cattle.io.clusters/fleet-default")
 RANCHER_TOKEN = os.getenv('RANCHER_TOKEN')
+CHECK_INTERVAL = os.getenv('CHECK_INTERVAL', default=60)
+NOTIF_THRESHOLD = os.getenv('NOTIF_THRESHOLD', default=2)
 
 headersList = {
  "Accept": "application/json",
