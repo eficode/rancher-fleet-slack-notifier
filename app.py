@@ -20,13 +20,12 @@ headersList = {
  "Content-Type": "application/json",
  "Authorization": f"Bearer {RANCHER_TOKEN}",
 }
-payload = ""
 
 
 def check_rancher_status():
     try:
         # Ignoring warnings for local certs. Remove verify=False if using external secure connection, instead of cluster internal one
-        request_response = requests.request("GET", RANCHER_URL, data=payload,  headers=headersList, verify=False)
+        request_response = requests.request("GET", RANCHER_URL, data="",  headers=headersList, verify=False)
     except requests.exceptions.ConnectionError as e:
         raise SystemExit(f'FATAL ERROR: {e}\n   Cannot connect to rancher URL')
     try:
@@ -43,7 +42,7 @@ def check_rancher_status():
                     cur.execute("SELECT count(*) FROM clusters WHERE name = ?", (cluster_name, ))
                     check_exists = cur.fetchone()[0]
                     if check_exists == 0:
-                        cur.execute("INSERT INTO clusters VALUES (?, ?, ?)", (cluster_name, cluster_status, ''))
+                        cur.execute("INSERT INTO clusters VALUES (?, ?, ?, ?)", (cluster_name, cluster_status, '', 0))
                     else:
                         cur.execute("UPDATE clusters SET ready = ? where name = ?", (cluster_status, cluster_name))
     except KeyError as e:
@@ -63,21 +62,29 @@ def send_notif_text(data):
 
 def setup_db():
     cur.execute('''CREATE TABLE clusters
-                (name text PRIMARY KEY, ready text, notif text)''')
+                (name text PRIMARY KEY, ready text, notif text, fail_count int)''')
     con.commit()
 
 
 def check_updates():
-    cur.execute('SELECT name, ready, notif FROM clusters')
+    cur.execute('SELECT name, ready, notif, fail_count FROM clusters')
     for row in cur.fetchall():
+        print(row)
         if "True" not in row[1]:
-            if "sync" not in row[2]:
-                notif_string = f":rotating_light: Cluster {row[0]} is not ready, or not in sync with Fleet, please check from Rancher :warning:"
-                send_notif_text(notif_string)
-                cur.execute('UPDATE clusters SET notif = ? where name = ?', (f'{notif_string}', f'{row[0]}'))
-                con.commit()
+            if "rotating_light" not in row[2]:
+                if row[3] >= NOTIF_THRESHOLD:
+                    notif_string = f":rotating_light: Cluster {row[0]} is not ready, or not in sync with Fleet, please check from Rancher :warning:"
+                    send_notif_text(notif_string)
+                    cur.execute('UPDATE clusters SET notif = ? where name = ?', (f'{notif_string}', f'{row[0]}'))
+                    cur.execute('UPDATE clusters SET fail_count = ? where name = ?', (row[3]+1, f'{row[0]}'))
+
+                    con.commit()
+                else:
+                    cur.execute('UPDATE clusters SET fail_count = ? where name = ?', (row[3]+1, f'{row[0]}'))
+                    con.commit()
         else:
             cur.execute('UPDATE clusters SET notif = ? where name = ?', ('', f'{row[0]}'))
+            cur.execute('UPDATE clusters SET fail_count = ? where name = ?', (0, f'{row[0]}'))
             if "rotating_light" in row[2]:
                 notif_string = f"Cluster {row[0]} is in sync. :white_check_mark:"
                 send_notif_text(notif_string)
@@ -90,4 +97,4 @@ if __name__ == "__main__":
     while True:
         check_rancher_status()
         check_updates()
-        time.sleep(60)
+        time.sleep(CHECK_INTERVAL)

@@ -17,10 +17,21 @@ Second, a secret needs to be created with the URLs and token. Simple way is from
 a file called secrets.env with content:
 ```
 SLACK_NOTIFY_URL=<from slack>
-RANCHER_URL=http://rancher.cattle-system/v1/fleet.cattle.io.clusters/fleet-default
 RANCHER_TOKEN=<bearer token for rancher user>
+RANCHER_URL=https://rancher.prms-tools.prod.gcp.veikkaus.fi/
+CHECK_INTERVAL=60
+NOTIF_THRESHOLD=2
 ```
-could be used, and inserted with the following command
+The RANCHER_URL, CHECK_INTERVAL and NOTIF_THRESHOLD can be omited and default values listed will be used.
+
+- SLACK_NOTIFY_URL : webhook URL from slack
+- RANCHER_TOKEN : Bearer token for authorization in rancher
+- RANCHER_URL : Rancher API URL default='http://rancher.cattle-system/v1/fleet.cattle.io.clusters/fleet-default'
+- CHECK_INTERVAL : Sleep period (in seconds) between checks default=60
+- NOTIF_THRESHOLD : How many times a cluster must out of sync before triggering alert default=2
+
+
+If using a secrets.env with above values, it could be inserted with the following command
 ```
 kubectl --namespace slack-notifier create secret generic slack-creds --from-env-file secrets.env        
 ```
