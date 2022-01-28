@@ -33,3 +33,13 @@ spec:
             secretKeyRef:
               name: slack-creds
               key: RANCHER_TOKEN
+        - name: CHECK_INTERVAL
+          valueFrom:
+            secretKeyRef:
+              name: slack-creds
+              key: CHECK_INTERVAL
+        - name: NOTIF_THRESHOLD
+          valueFrom:
+            secretKeyRef:
+              name: slack-creds
+              key: NOTIF_THRESHOLD          
